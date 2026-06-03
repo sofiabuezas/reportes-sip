@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reporte Performance Mayo 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f0e;
+    --bg2: #131610;
+    --bg3: #1a1f1b;
+    --green: #4ade80;
+    --green-dim: #22c55e;
+    --green-dark: #14532d;
+    --green-muted: #166534;
+    --yellow: #facc15;
+    --red: #f87171;
+    --border: #2a2f2b;
+    --text: #e8ede9;
+    --text-dim: #8a9b8c;
+    --text-muted: #4a5a4c;
+    --accent-line: #4ade8033;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  /* ── COVER ── */
+  .cover {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 80px;
+    position: relative;
+    overflow: hidden;
+    page-break-after: always;
+  }
+
+  .cover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 70% 40%, #1a3a2220 0%, transparent 70%),
+                radial-gradient(ellipse 50% 50% at 10% 80%, #0f2a1510 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .cover-grid {
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(var(--border) 1px, transparent 1px),
+                      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 60px 60px;
+    opacity: 0.3;
+  }
+
+  .cover-tag {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 32px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .cover-tag::before {
+    content: '';
+    display: block;
+    width: 32px;
+    height: 1px;
+    background: var(--green);
+  }
+
+  .cover-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(52px, 7vw, 88px);
+    font-weight: 800;
+    line-height: .95;
+    color: var(--text);
+    position: relative;
+    margin-bottom: 24px;
+  }
+
+  .cover-title span { color: var(--green); }
+
+  .cover-sub {
+    font-size: 18px;
+    color: var(--text-dim);
+    font-weight: 300;
+    margin-bottom: 64px;
+    position: relative;
+  }
+
+  .cover-meta {
+    display: flex;
+    gap: 48px;
+    position: relative;
+  }
+
+  .cover-meta-item { display: flex; flex-direction: column; gap: 4px; }
+  .cover-meta-label { font-size: 11px; letter-spacing: .15em; text-transform: uppercase; color: var(--text-muted); }
+  .cover-meta-value { font-family: 'Syne', sans-serif; font-size: 18px; color: var(--text); }
+
+  .cover-number {
+    position: absolute;
+    right: 80px;
+    bottom: 80px;
+    font-family: 'Syne', sans-serif;
+    font-size: 180px;
+    font-weight: 800;
+    color: var(--border);
+    line-height: 1;
+    user-select: none;
+  }
+
+  /* ── LAYOUT ── */
+  .page { max-width: 900px; margin: 0 auto; padding: 80px 60px; }
+
+  /* ── SECTION ── */
+  .section { margin-bottom: 72px; }
+
+  .section-number {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-number::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.15;
+    margin-bottom: 20px;
+  }
+
+  h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--green-dim);
+    margin: 40px 0 12px;
+    letter-spacing: .03em;
+  }
+
+  p { color: var(--text-dim); margin-bottom: 16px; }
+  p strong { color: var(--text); font-weight: 500; }
+
+  /* ── KPI GRID ── */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 28px 0; }
+
+  .kpi-card {
+    background: var(--bg2);
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: background .2s;
+  }
+
+  .kpi-card:hover { background: var(--bg3); }
+
+  .kpi-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--green);
+    line-height: 1;
+  }
+
+  .kpi-label { font-size: 12px; color: var(--text-muted); letter-spacing: .04em; }
+  .kpi-sub { font-size: 11px; color: var(--text-muted); font-style: italic; margin-top: 2px; }
+
+  /* ── TABLE ── */
+  .table-wrap { overflow-x: auto; margin: 20px 0 32px; border-radius: 10px; border: 1px solid var(--border); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+
+  thead tr { background: var(--bg3); }
+
+  th {
+    padding: 12px 16px;
+    text-align: left;
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--green);
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    padding: 11px 16px;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg3); color: var(--text); }
+
+  .alert-cell { color: var(--red) !important; font-weight: 500; }
+  .good-cell { color: var(--green) !important; font-weight: 500; }
+  .dim-cell { color: var(--text-muted) !important; }
+
+  /* ── SEMAFORO ── */
+  .semaforo { display: grid; grid-template-columns: 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 20px 0; }
+
+  .sem-row { display: grid; grid-template-columns: 200px 1fr 1fr 1fr 60px; background: var(--bg2); }
+  .sem-row:hover { background: var(--bg3); }
+
+  .sem-header { background: var(--bg3) !important; }
+  .sem-header .sem-cell { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+
+  .sem-cell {
+    padding: 13px 16px;
+    font-size: 13px;
+    border-right: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sem-cell:last-child { border-right: none; justify-content: center; }
+  .sem-metric { color: var(--text); font-weight: 500; }
+  .sem-verde { color: #4ade80; }
+  .sem-amarillo { color: #facc15; }
+  .sem-rojo { color: #f87171; }
+  .sem-fuente { font-size: 11px; color: var(--text-muted); text-align: center; }
+  .sem-header .sem-cell { color: var(--text-dim); }
+
+  /* ── BULLETS ── */
+  .bullets { list-style: none; display: flex; flex-direction: column; gap: 14px; margin: 16px 0 24px; }
+
+  .bullets li {
+    display: flex;
+    gap: 14px;
+    color: var(--text-dim);
+    padding: 16px 18px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    border-left: 3px solid var(--green-muted);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .bullets li::before { content: '→'; color: var(--green); flex-shrink: 0; margin-top: 1px; }
+  .bullets li strong { color: var(--text); }
+
+  /* ── OBJECTIVE BAR ── */
+  .obj-bar-wrap { margin: 24px 0; }
+  .obj-bar-labels { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 12px; color: var(--text-muted); }
+  .obj-bar-track { height: 10px; background: var(--bg3); border-radius: 99px; overflow: hidden; border: 1px solid var(--border); }
+  .obj-bar-fill { height: 100%; background: linear-gradient(90deg, var(--green-dim), var(--green)); border-radius: 99px; width: 86.6%; position: relative; }
+  .obj-bar-fill::after { content: '86.6%'; position: absolute; right: 0; top: -22px; transform: translateX(50%); font-size: 11px; color: var(--green); font-family: 'Syne', sans-serif; font-weight: 600; }
+
+  /* ── WEEK BADGE ── */
+  .week-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 6px 14px;
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+  }
+
+  .week-badge span { width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: block; }
+
+  /* ── CALLOUT ── */
+  .callout {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--yellow);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    font-size: 13.5px;
+    color: var(--text-dim);
+  }
+
+  .callout strong { color: var(--yellow); }
+
+  /* ── PRINT ── */
+  @media print {
+    body { background: #0d0f0e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .cover { page-break-after: always; }
+    .section { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="cover-grid"></div>
+  <div class="cover-tag">Campaña Seguidores IG · Ads Performance</div>
+  <h1 class="cover-title">Reporte<br><span>Mayo</span><br>2026</h1>
+  <p class="cover-sub">Análisis mensual · Aprendizajes · Próximos pasos</p>
+  <div class="cover-meta">
+    <div class="cover-meta-item">
+      <span class="cover-meta-label">Campaña</span>
+      <span class="cover-meta-value">Seguidores IG Abril</span>
+    </div>
+    <div class="cover-meta-item">
+      <span class="cover-meta-label">Período</span>
+      <span class="cover-meta-value">1 — 31 mayo 2026</span>
+    </div>
+    <div class="cover-meta-item">
+      <span class="cover-meta-label">Preparado</span>
+      <span class="cover-meta-value">Junio 2026</span>
+    </div>
+  </div>
+  <div class="cover-number">05</div>
+</div>
+
+<!-- CONTENT -->
+<div class="page">
+
+  <!-- 1. RESUMEN EJECUTIVO -->
+  <div class="section">
+    <div class="section-number">01 — Resumen ejecutivo</div>
+    <h2>El mes en números</h2>
+    <p>Mayo fue un mes de <strong>prueba, aprendizaje y estabilización</strong>. La campaña cerró con 2.837 nuevos seguidores a un costo promedio de $225 ARS — dentro del rango aceptable según los parámetros de referencia establecidos. El mes incluyó un experimento fallido con Advantage+, una semana de desestabilización del algoritmo, y una recuperación sostenida durante las últimas tres semanas.</p>
+
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-value">2.837</div>
+        <div class="kpi-label">Seguidores ganados</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">$225</div>
+        <div class="kpi-label">Costo por seguidor (ARS)</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">31,27%</div>
+        <div class="kpi-label">Tasa de conversión</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">3,12%</div>
+        <div class="kpi-label">CTR</div>
+      </div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-value">$640.485</div>
+        <div class="kpi-label">Importe gastado (ARS)</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">215.934</div>
+        <div class="kpi-label">Alcance total</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">280.012</div>
+        <div class="kpi-label">Impresiones</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">9.074</div>
+        <div class="kpi-label">Visitas al perfil</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. CONTEXTO -->
+  <div class="section">
+    <div class="section-number">02 — Contexto</div>
+    <h2>De dónde venimos</h2>
+    <p>La campaña inició el 14 de abril con un único conjunto segmentado por intereses de café de especialidad. Las primeras dos semanas fueron sólidas: <strong>$158 ARS por seguidor</strong> y tasa de conversión del 38,86%.</p>
+    <p>A partir de la última semana de abril, el costo empezó a subir gradualmente — de $158 a $290 ARS — resultado natural de la saturación de audiencia en una campaña que llevaba varias semanas activa con los mismos creativos y la misma segmentación.</p>
+    <p>Frente a esto, se decidió testear dos cambios simultáneos: agregar un conjunto Advantage+ y sumar un nuevo creativo en carrusel. Esta decisión, implementada el 7 de mayo, generó el evento atípico que se analiza a continuación.</p>
+  </div>
+
+  <!-- 3. EVOLUCIÓN SEMANAL -->
+  <div class="section">
+    <div class="section-number">03 — Evolución semana a semana</div>
+    <h2>Qué pasó cada semana</h2>
+
+    <div class="week-badge"><span></span> Semana 1 · 4 al 12 de mayo</div>
+    <p>El conjunto de café con intereses mantenía un costo de entre $180 y $230 ARS. El 7 de mayo se produjo un evento atípico que disparó todos los promedios del período.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Día</th><th>Conjunto</th><th>Gasto</th><th>Seguidores</th><th>Costo/Seg.</th></tr></thead>
+        <tbody>
+          <tr><td>04/05</td><td>Intereses café</td><td>$23.391</td><td>130</td><td class="good-cell">$180</td></tr>
+          <tr><td>05/05</td><td>Intereses café</td><td>$20.745</td><td>98</td><td>$212</td></tr>
+          <tr><td>06/05</td><td>Intereses café</td><td>$19.208</td><td>96</td><td>$200</td></tr>
+          <tr><td>07/05</td><td>Intereses café</td><td>$32.250</td><td class="alert-cell">11</td><td class="alert-cell">$2.932 ⚠</td></tr>
+          <tr><td>07/05</td><td>Advantage+</td><td>$6.343</td><td class="alert-cell">0</td><td class="dim-cell">Sin resultado</td></tr>
+          <tr><td>08/05</td><td>Intereses café</td><td>$18.740</td><td>82</td><td>$229</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout"><strong>¿Qué causó el pico del 7 de mayo?</strong> Al activarse simultáneamente el conjunto Advantage+ y el cambio de CBO a ABO, Meta reinició la fase de aprendizaje del algoritmo. El conjunto de café gastó el doble de lo habitual ($32.250) con resultados casi nulos. El costo de $2.932 ese día es un outlier que distorsionó el promedio del período a $390 ARS.</div>
+
+    <div class="week-badge" style="margin-top:32px"><span></span> Semana 2 · 12 al 18 de mayo</div>
+    <p>Con Advantage+ pausado y sin nuevas intervenciones, el algoritmo comenzó a recuperarse. Esta fue la <strong>mejor semana del mes en tasa de conversión: 43%</strong>.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Día</th><th>Seguidores</th><th>Costo/Seg.</th><th>Tasa conv.</th></tr></thead>
+        <tbody>
+          <tr><td>13/05</td><td>95</td><td>$213</td><td class="good-cell">45%</td></tr>
+          <tr><td>14/05</td><td>87</td><td>$218</td><td class="good-cell">44%</td></tr>
+          <tr><td>15/05</td><td>87</td><td>$222</td><td class="good-cell">43%</td></tr>
+          <tr><td>16/05</td><td>87</td><td>$238</td><td class="good-cell">42%</td></tr>
+          <tr><td>17/05</td><td>112</td><td class="good-cell">$191</td><td class="good-cell">48%</td></tr>
+          <tr><td>18/05</td><td>68</td><td>$227</td><td>41%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="week-badge" style="margin-top:32px"><span></span> Semana 3 · 19 al 25 de mayo</div>
+    <p>Se incorporaron dos nuevos creativos: <strong>Prueba Social</strong> y <strong>Voz en Off</strong>. Meta distribuyó el presupuesto automáticamente y priorizó Prueba Social de forma sostenida.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Anuncio</th><th>Gasto total</th><th>Seguidores</th><th>Costo/Seg.</th><th>Resultado</th></tr></thead>
+        <tbody>
+          <tr><td>Prueba Social</td><td>$94.680</td><td class="good-cell">488</td><td class="good-cell">$194</td><td class="good-cell">⭐ Priorizado</td></tr>
+          <tr><td>Voz en Off</td><td>$47.509</td><td>209</td><td>$227</td><td class="dim-cell">Reducido por Meta</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="week-badge" style="margin-top:32px"><span></span> Semana 4 · 26 mayo al 2 de junio</div>
+    <p>Ambos creativos activos. Meta mantuvo Prueba Social como prioritario pero comenzó a rotar más hacia Voz en Off a medida que la frecuencia de Prueba Social aumentó.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Anuncio</th><th>Seguidores</th><th>Costo/Seg. prom.</th><th>Frecuencia</th></tr></thead>
+        <tbody>
+          <tr><td>Prueba Social</td><td>450</td><td>$248</td><td>1,3</td></tr>
+          <tr><td>Voz en Off</td><td>259</td><td class="good-cell">$217</td><td>1,09</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 4. CREATIVOS -->
+  <div class="section">
+    <div class="section-number">04 — Análisis de creativos</div>
+    <h2>Qué dijo el algoritmo</h2>
+    <p>Durante mayo se testearon cuatro formatos. Los resultados establecen una jerarquía clara que debe guiar la estrategia de contenido para junio.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Creativo</th><th>Período</th><th>Seguidores</th><th>Costo/Seg.</th><th>Veredicto</th></tr></thead>
+        <tbody>
+          <tr><td>Prueba Social</td><td>Sem. 3–4</td><td class="good-cell">938</td><td class="good-cell">$194–248</td><td class="good-cell">⭐ Mejor performer</td></tr>
+          <tr><td>Pauta Abril</td><td>Todo el mes</td><td>~1.500</td><td>$180–230</td><td>Base sólida</td></tr>
+          <tr><td>Voz en Off</td><td>Sem. 3–4</td><td>468</td><td>$207–250</td><td class="dim-cell">Complementario</td></tr>
+          <tr><td>Advantage+</td><td>7–8 mayo</td><td class="alert-cell">0</td><td class="alert-cell">Sin resultado</td><td class="alert-cell">❌ Pausado</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>El Anuncio Prueba Social es el creativo que mejor performa de forma consistente — Meta lo elige orgánicamente cuando compite por presupuesto. Voz en Off funciona como complemento: permite que Meta rote cuando Prueba Social acumula frecuencia.</p>
+  </div>
+
+  <!-- 5. APRENDIZAJES -->
+  <div class="section">
+    <div class="section-number">05 — Aprendizajes</div>
+    <h2>Lo que nos deja el mes</h2>
+    <ul class="bullets">
+      <li><strong>Advantage+ confirmó que la segmentación por intereses es la correcta.</strong> Sin intereses específicos, el alcance crece pero la conversión colapsa porque el público no tiene afinidad con la marca.</li>
+      <li><strong>Nunca implementar dos cambios simultáneos.</strong> El cambio CBO → ABO más Advantage+ al mismo tiempo impidió identificar qué variable causó el problema y desestabilizó el algoritmo por varios días.</li>
+      <li><strong>El costo de $158 de abril no es el benchmark real.</strong> Es el costo de una campaña nueva con audiencia fresca. El rango sostenible con campaña madura es $190–270 ARS.</li>
+      <li><strong>No intervenir también es una decisión estratégica.</strong> Dejar el algoritmo quieto 7 días fue lo que permitió la recuperación. Cada cambio reinicia el aprendizaje.</li>
+      <li><strong>Meta distribuye el presupuesto mejor que nosotros.</strong> El algoritmo identificó solo al mejor creativo y le asignó los recursos. Nuestro rol es proveer buenos creativos; el de Meta, optimizar la distribución.</li>
+      <li><strong>CTR 3,12% y conversión 31–43% están muy por encima del mercado</strong> (CTR promedio: 0,5–2%; conversión: 10–25%). Son una fortaleza real de la campaña.</li>
+    </ul>
+  </div>
+
+  <!-- 6. SEMÁFORO -->
+  <div class="section">
+    <div class="section-number">06 — Parámetros de referencia</div>
+    <h2>Semáforo de métricas</h2>
+    <p>Rangos para evaluar el rendimiento cada semana. <strong>Propio</strong> = basado en el historial real de esta campaña. <strong>Mercado</strong> = benchmark general de Meta en LATAM.</p>
+
+    <div class="semaforo">
+      <div class="sem-row sem-header">
+        <div class="sem-cell sem-metric">Métrica</div>
+        <div class="sem-cell">🟢 Óptimo</div>
+        <div class="sem-cell">🟡 Aceptable</div>
+        <div class="sem-cell">🔴 Alerta</div>
+        <div class="sem-cell">Fuente</div>
+      </div>
+      <div class="sem-row">
+        <div class="sem-cell sem-metric">Costo por seguidor</div>
+        <div class="sem-cell sem-verde">hasta $200 ARS</div>
+        <div class="sem-cell sem-amarillo">$200 – $280 ARS</div>
+        <div class="sem-cell sem-rojo">más de $280 ARS</div>
+        <div class="sem-cell sem-fuente">Propio</div>
+      </div>
+      <div class="sem-row">
+        <div class="sem-cell sem-metric">Tasa de conversión</div>
+        <div class="sem-cell sem-verde">más de 38%</div>
+        <div class="sem-cell sem-amarillo">25% – 38%</div>
+        <div class="sem-cell sem-rojo">menos de 25%</div>
+        <div class="sem-cell sem-fuente">Mercado</div>
+      </div>
+      <div class="sem-row">
+        <div class="sem-cell sem-metric">CTR</div>
+        <div class="sem-cell sem-verde">más de 3%</div>
+        <div class="sem-cell sem-amarillo">2% – 3%</div>
+        <div class="sem-cell sem-rojo">menos de 2%</div>
+        <div class="sem-cell sem-fuente">Mercado</div>
+      </div>
+      <div class="sem-row">
+        <div class="sem-cell sem-metric">Seguidores / semana</div>
+        <div class="sem-cell sem-verde">más de 700</div>
+        <div class="sem-cell sem-amarillo">500 – 700</div>
+        <div class="sem-cell sem-rojo">menos de 500</div>
+        <div class="sem-cell sem-fuente">Propio</div>
+      </div>
+      <div class="sem-row">
+        <div class="sem-cell sem-metric">Frecuencia del anuncio</div>
+        <div class="sem-cell sem-verde">menos de 1,5</div>
+        <div class="sem-cell sem-amarillo">1,5 – 2,0</div>
+        <div class="sem-cell sem-rojo">más de 2,0</div>
+        <div class="sem-cell sem-fuente">Mercado</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. RECOMENDACIONES -->
+  <div class="section">
+    <div class="section-number">07 — Recomendaciones</div>
+    <h2>Próximos pasos</h2>
+
+    <h3>Inmediato — junio</h3>
+    <ul class="bullets">
+      <li><strong>Mantener la estructura actual sin modificaciones.</strong> Ambos creativos activos, sin cambios de presupuesto ni segmentación. El algoritmo está estabilizado y cualquier intervención reiniciaría el aprendizaje.</li>
+      <li><strong>Monitorear la frecuencia del Anuncio Prueba Social.</strong> Cuando supere 1,8 es el momento de incorporar un nuevo creativo antes de que el costo empiece a subir.</li>
+      <li><strong>Preparar al menos un nuevo creativo para tener listo.</strong> El nuevo anuncio debe mantener el formato y tono de Prueba Social, que es el que mejor está funcionando.</li>
+    </ul>
+
+    <h3>Mediano plazo</h3>
+    <ul class="bullets">
+      <li><strong>No buscar bajar el costo a $158 ARS como objetivo fijo.</strong> Ese valor es de una campaña nueva. El objetivo realista y sostenible es mantener el costo por debajo de $250 ARS.</li>
+      <li><strong>Evaluar en 4 semanas si el ritmo de 700 seguidores/semana se mantiene.</strong> Si se sostiene, analizar si existe margen para escalar el presupuesto y acelerar el avance hacia el objetivo Q2.</li>
+      <li><strong>Ante cualquier nuevo test, implementar un solo cambio a la vez</strong> y esperar al menos 5 días antes de evaluar resultados.</li>
+    </ul>
+  </div>
+
+  <!-- 8. OBJETIVO Q2 -->
+  <div class="section">
+    <div class="section-number">08 — Objetivo Q2</div>
+    <h2>¿Dónde estamos?</h2>
+
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-value">8.424</div>
+        <div class="kpi-label">Seguidores al inicio Q2</div>
+        <div class="kpi-sub">1 de abril</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">11.261</div>
+        <div class="kpi-label">Seguidores actuales</div>
+        <div class="kpi-sub">2 de junio</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">13.000</div>
+        <div class="kpi-label">Objetivo Q2</div>
+        <div class="kpi-sub">fin de junio</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">1.739</div>
+        <div class="kpi-label">Faltan</div>
+        <div class="kpi-sub">en ~4 semanas</div>
+      </div>
+    </div>
+
+    <div class="obj-bar-wrap">
+      <div class="obj-bar-labels">
+        <span>8.424 · inicio Q2</span>
+        <span>11.261 · hoy</span>
+        <span>13.000 · objetivo</span>
+      </div>
+      <div class="obj-bar-track">
+        <div class="obj-bar-fill"></div>
+      </div>
+    </div>
+
+    <p style="margin-top:20px">Con el ritmo actual de aproximadamente <strong>700 seguidores por semana</strong>, el objetivo de 13.000 está al alcance. Las 4 semanas restantes de junio ofrecen margen suficiente para llegar, siempre que la campaña se mantenga estable y los creativos no se saturen.</p>
+  </div>
+
+  <div style="text-align:center; padding: 40px 0 80px; color: var(--text-muted); font-size: 12px; letter-spacing: .08em;">
+    Reporte preparado en junio de 2026 &nbsp;·&nbsp; Equipo de Ads
+  </div>
+
+</div>
+</body>
+</html>
